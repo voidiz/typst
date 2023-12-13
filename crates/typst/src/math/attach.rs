@@ -243,15 +243,18 @@ fn layout_attachments(
         (base.width(), base.ascent(), base.descent());
     let base_class = base.class().unwrap_or(MathClass::Normal);
 
-    let ascent = base_ascent
-        .max(shift_up + measure!(tr, ascent))
+    println!("base: {:#?}", base);
+    let ascent = (shift_up + measure!(tr, ascent))
         .max(shift_up + measure!(tl, ascent))
-        .max(shift_up + measure!(t, height));
+        .max(shift_up + measure!(t, height))
+        + base_ascent;
 
-    let descent = base_descent
-        .max(shift_down + measure!(br, descent))
+    let descent = (shift_down + measure!(br, descent))
         .max(shift_down + measure!(bl, descent))
-        .max(shift_down + measure!(b, height));
+        .max(shift_down + measure!(b, height))
+        + base_descent;
+
+    println!("shift up {:#?} shift down {:#?} ascent: {:#?} descent: {:#?} tl t tr bl b br: {:#?}", shift_up, shift_down, ascent, descent, (&tl, &t, &tr, &bl, &b, &br));
 
     let pre_sup_width = measure!(tl, width);
     let pre_sub_width = measure!(bl, width);
@@ -264,10 +267,16 @@ fn layout_attachments(
     let base_pos =
         Point::new(sup_delta + pre_width_max, ascent - base_ascent - base_offset);
     if [&tl, &bl, &tr, &br].iter().all(|&e| e.is_none()) {
+        println!("center_frame.size {:#?}", center_frame.size());
         ctx.push(FrameFragment::new(ctx, center_frame).with_class(base_class));
         return Ok(());
     }
 
+    println!(
+        "center frame height: {:#?} ascent + descent: {:#?}",
+        center_frame.height(),
+        ascent + descent
+    );
     let mut frame = Frame::soft(Size::new(
         pre_width_max + base_width + post_max_width + scaled!(ctx, space_after_script),
         ascent + descent,
@@ -303,6 +312,7 @@ fn layout_attachments(
         frame.push_frame(pos, br.into_frame());
     }
 
+    println!("frame.size {:#?}", frame.size());
     ctx.push(FrameFragment::new(ctx, frame).with_class(base_class));
 
     Ok(())

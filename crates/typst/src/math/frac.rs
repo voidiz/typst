@@ -132,6 +132,13 @@ fn layout(
     let denom_pos = Point::new((width - denom.width()) / 2.0, height - denom.height());
     let baseline = line_pos.y + axis;
 
+    println!(
+        "denom_pos {:#?} height {:#?} denom.height {:#?}",
+        denom_pos,
+        height,
+        denom.height()
+    );
+
     let mut frame = Frame::soft(size);
     frame.set_baseline(baseline);
     frame.push_frame(num_pos, num);
